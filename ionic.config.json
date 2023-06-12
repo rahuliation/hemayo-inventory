@@ -1,0 +1,7 @@
+{
+  "name": "hemayo-inventory",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "react-vite"
+}
