@@ -12,7 +12,7 @@ import {
   IonAccordion,
   useIonAlert,
 } from "@ionic/react";
-import { useHistory } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
 import { getFirestore, collection, getDocs, where } from "firebase/firestore";
 import { getDocsByQuery, removeDoc } from "../operations";
 import { Product } from "../schema";
@@ -22,6 +22,7 @@ const ProductListPage = () => {
   const history = useHistory();
   const [products, setProducts] = useState<Product[]>([]);
   const [presentAlert] = useIonAlert();
+  const location = useLocation();
 
   const [activeInventory] = useMyStore((s) => s.userStore.activeInventory);
 
@@ -42,7 +43,7 @@ const ProductListPage = () => {
       fetchCategories();
     }
     fetchCategories();
-  }, [activeInventory]);
+  }, [activeInventory, location]);
 
   const handleCreate = () => {
     history.push("/products/create");
@@ -51,14 +52,6 @@ const ProductListPage = () => {
   const handleEdit = (productId: string) => {
     history.push(`/products/${productId}`);
   };
-
-  useEffect(() => {
-    const fetchProductsOnReturn = () => {
-      fetchCategories();
-    };
-
-    return history.listen(fetchProductsOnReturn);
-  }, [history]);
 
   const handleDelete = (productId: string) => {
     removeDoc("products", productId);
@@ -78,7 +71,7 @@ const ProductListPage = () => {
       <IonContent fullscreen>
         <IonAccordionGroup>
           {products.map((product) => (
-            <IonAccordion value={product.id}>
+            <IonAccordion key={product.id} value={product.id}>
               <IonItem slot="header" color="light">
                 <IonLabel>{product.name}</IonLabel>
                 <div slot="end" />

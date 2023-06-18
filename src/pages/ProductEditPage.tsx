@@ -70,7 +70,7 @@ const ProductEditPage = () => {
   };
 
 
-  const onSubmit = async (values: Omit<Product, "id" | 'inventoryId'>) => {
+  const onSubmit = async (values: Optional<Product, "id" | 'inventoryId'>) => {
     try {
       if (activeInventory) {
         // Create or update the product with the selected category
@@ -112,7 +112,6 @@ const ProductEditPage = () => {
   }, [productId, activeInventory]);
 
 
-  console.log(categoryOptions)
 
   return (
     <IonPage>

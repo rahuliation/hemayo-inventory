@@ -35,7 +35,7 @@ const Settings: React.FC = () => {
             <IonIcon aria-hidden="true" icon={pricetagOutline} />
             <IonLabel className="px-3">Category</IonLabel>
           </IonItem>
-          <IonItem button onClick={() => navigateTo("/suppilers")}>
+          <IonItem button onClick={() => navigateTo("/suppliers")}>
             <IonIcon aria-hidden="true" icon={personOutline} />
             <IonLabel className="px-3">Supplier</IonLabel>
           </IonItem>

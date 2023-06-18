@@ -9,6 +9,7 @@ import {
   IonItem,
   IonLabel,
   IonPage,
+  IonTextarea,
   IonToolbar,
 } from "@ionic/react";
 
@@ -17,19 +18,26 @@ import { useMyStore } from "../store/store";
 import { createDoc, getDocById, updateDoc } from "../operations";
 import { Supplier } from "../schema";
 import { useFormik } from "formik";
+import { Optional } from "utility-types";
 
 const SupplierEditPage = () => {
   const history = useHistory();
-  const { supplierId: supplierIdParam  } = useParams<{ supplierId: string }>();
+  const { supplierId: supplierIdParam } = useParams<{ supplierId: string }>();
 
-  const supplierId = supplierIdParam==='create' ? '' : supplierIdParam;
+  const supplierId = supplierIdParam === "create" ? "" : supplierIdParam;
 
   const [activeInventory] = useMyStore((s) => s.userStore.activeInventory);
 
-  const [supplier, setSupplier] = useState<Supplier | undefined>(undefined);
+  const [supplier, setSupplier] = useState<Optional<Supplier, "id">>(
+    {
+      address: "",
+      inventoryId: "",
+      name: "",
+      phoneNumber: "",
+    }
+  );
 
-
-  const onSubmit = async (values: { name: string }) => {
+  const onSubmit = async (values: Optional<Supplier, "id" | "inventoryId">) => {
     try {
       if (activeInventory) {
         if (supplierId) {
@@ -39,8 +47,8 @@ const SupplierEditPage = () => {
           });
         } else {
           await createDoc<Supplier>("suppliers", {
+            ...values,
             inventoryId: activeInventory.id,
-            name: values.name,
           });
         }
       }
@@ -53,7 +61,7 @@ const SupplierEditPage = () => {
 
   const formik = useFormik({
     initialValues: {
-      name: supplier?.name ?? ''
+      ...supplier,
     },
     onSubmit,
     enableReinitialize: true,
@@ -68,7 +76,9 @@ const SupplierEditPage = () => {
   const fetchSupplier = async () => {
     try {
       const supplier = await getDocById<Supplier>("suppliers", supplierId);
-      setSupplier(supplier ?? undefined)
+      if(supplier) {
+        setSupplier(supplier);
+      }
     } catch (error) {
       console.error("Error fetching supplier:", error);
     }
@@ -98,6 +108,36 @@ const SupplierEditPage = () => {
           </IonItem>
           {formik.touched.name && formik.errors.name ? (
             <div>{formik.errors.name}</div>
+          ) : null}
+
+          <IonItem>
+            <IonLabel position="floating">Phone Number</IonLabel>
+            <IonInput
+              type="text"
+              id="phoneNumber"
+              name="phoneNumber"
+              value={formik.values.phoneNumber}
+              onIonChange={formik.handleChange}
+              onIonBlur={formik.handleBlur}
+            ></IonInput>
+          </IonItem>
+          {formik.touched.phoneNumber && formik.errors.phoneNumber ? (
+            <div>{formik.errors.phoneNumber}</div>
+          ) : null}
+
+          <IonItem>
+            <IonLabel position="floating">Adress</IonLabel>
+            <IonTextarea
+              id="address"
+              name="address"
+              onIonChange={formik.handleChange}
+              onIonBlur={formik.handleBlur}
+            >
+              {formik.values.address}
+            </IonTextarea>
+          </IonItem>
+          {formik.touched.address && formik.errors.address ? (
+            <div>{formik.errors.phoneNumber}</div>
           ) : null}
 
           <IonButton expand="block" type="submit">

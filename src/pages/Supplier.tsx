@@ -70,7 +70,7 @@ const SupplierListPage = () => {
         </IonToolbar>
       </IonHeader>
       <IonContent fullscreen>
-      <IonAccordionGroup>
+        <IonAccordionGroup>
           {suppliers.map((supplier) => (
             <IonAccordion value={supplier.id}>
               <IonItem slot="header" color="light">
@@ -78,6 +78,18 @@ const SupplierListPage = () => {
                 <div slot="end" />
               </IonItem>
               <div className="ion-padding" slot="content">
+                <IonItem>
+                  <IonLabel>
+                    <h3>PhoneNumber</h3>
+                    <p>{supplier.phoneNumber}</p>
+                  </IonLabel>
+                </IonItem>
+                <IonItem>
+                  <IonLabel>
+                    <h3>Address</h3>
+                    <p>{supplier.address}</p>
+                  </IonLabel>
+                </IonItem>
                 <IonItem
                   slot="end"
                   color="light"
@@ -120,7 +132,6 @@ const SupplierListPage = () => {
             </IonAccordion>
           ))}
         </IonAccordionGroup>
-        
       </IonContent>
     </IonPage>
   );

@@ -28,7 +28,7 @@ export const productSchema = z.object({
 
 export const supplierSchema = z.object({
   name: z.string(),
-  phoneNumber: z.number(),
+  phoneNumber: z.string(),
   inventoryId: z.string(),
   address: z.string(),
 });
