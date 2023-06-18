@@ -6,8 +6,10 @@ import {
   IonToolbar,
   IonTitle,
   IonPage,
+  IonList,
   IonItem,
   IonLabel,
+  IonAlert,
   useIonAlert,
   IonAccordion,
   IonAccordionGroup,
@@ -15,53 +17,53 @@ import {
 import { useHistory, useLocation } from "react-router-dom";
 import { deleteDoc, where } from "firebase/firestore";
 import { getDocsByQuery, removeDoc } from "../operations";
-import { Category } from "../schema";
+import { Supplier } from "../schema";
 import { useMyStore } from "../store/store";
 
-const CategoryListPage = () => {
+const SupplierListPage = () => {
   const history = useHistory();
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [presentAlert] = useIonAlert();
   let location = useLocation();
 
   const [activeInventory] = useMyStore((s) => s.userStore.activeInventory);
 
-  const fetchCategories = async () => {
+  const fetchSuppliers = async () => {
     try {
-      const fetchedCategories = await getDocsByQuery<Category>(
-        "categories",
+      const fetchedSuppliers = await getDocsByQuery<Supplier>(
+        "suppliers",
         where("inventoryId", "==", activeInventory?.id)
       );
-      setCategories(fetchedCategories);
+      setSuppliers(fetchedSuppliers);
     } catch (error) {
-      console.error("Error fetching categories:", error);
+      console.error("Error fetching suppliers:", error);
     }
   };
 
   useEffect(() => {
     if (activeInventory?.id) {
-      fetchCategories();
+      fetchSuppliers();
     }
   }, [activeInventory, location]);
 
   const handleCreate = () => {
-    history.push("/categories/create");
+    history.push("/suppliers/create");
   };
 
-  const handleEdit = (categoryId: string) => {
-    history.push(`/categories/${categoryId}`);
+  const handleEdit = (supplierId: string) => {
+    history.push(`/suppliers/${supplierId}`);
   };
 
-  const handleDelete = (categoryId: string) => {
-    removeDoc("categories", categoryId);
-    fetchCategories();
+  const handleDelete = (supplierId: string) => {
+    removeDoc("suppliers", supplierId);
+    fetchSuppliers();
   };
 
   return (
     <IonPage>
       <IonHeader>
         <IonToolbar>
-          <IonTitle>Category</IonTitle>
+          <IonTitle>Supplier</IonTitle>
           <IonButton slot="end" onClick={handleCreate}>
             Create
           </IonButton>
@@ -69,10 +71,10 @@ const CategoryListPage = () => {
       </IonHeader>
       <IonContent fullscreen>
       <IonAccordionGroup>
-          {categories.map((category) => (
-            <IonAccordion value={category.id}>
+          {suppliers.map((supplier) => (
+            <IonAccordion value={supplier.id}>
               <IonItem slot="header" color="light">
-                <IonLabel>{category.name}</IonLabel>
+                <IonLabel>{supplier.name}</IonLabel>
                 <div slot="end" />
               </IonItem>
               <div className="ion-padding" slot="content">
@@ -96,7 +98,7 @@ const CategoryListPage = () => {
                             text: "OK",
                             role: "confirm",
                             handler: () => {
-                              handleDelete(category.id);
+                              handleDelete(supplier.id);
                             },
                           },
                         ],
@@ -108,7 +110,7 @@ const CategoryListPage = () => {
                   <IonButton
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleEdit(category.id);
+                      handleEdit(supplier.id);
                     }}
                   >
                     Edit
@@ -124,4 +126,4 @@ const CategoryListPage = () => {
   );
 };
 
-export default CategoryListPage;
+export default SupplierListPage;
