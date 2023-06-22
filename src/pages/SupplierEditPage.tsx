@@ -15,7 +15,7 @@ import {
 
 import { useHistory, useParams } from "react-router";
 import { useMyStore } from "../store/store";
-import { createDoc, getDocById, updateDoc } from "../operations";
+import { createDoc, getDocById, getRef, updateDoc } from "../operations";
 import { Supplier } from "../schema";
 import { useFormik } from "formik";
 import { Optional } from "utility-types";
@@ -31,24 +31,24 @@ const SupplierEditPage = () => {
   const [supplier, setSupplier] = useState<Optional<Supplier, "id">>(
     {
       address: "",
-      inventoryId: "",
+      inventoryRef: "",
       name: "",
       phoneNumber: "",
     }
   );
 
-  const onSubmit = async (values: Optional<Supplier, "id" | "inventoryId">) => {
+  const onSubmit = async (values: Optional<Supplier, "id" | "inventoryRef">) => {
     try {
       if (activeInventory) {
         if (supplierId) {
           await updateDoc<Supplier>("suppliers", supplierId, {
-            inventoryId: activeInventory.id,
+            inventoryRef: getRef("inventories", activeInventory.id),
             name: values.name,
           });
         } else {
           await createDoc<Supplier>("suppliers", {
             ...values,
-            inventoryId: activeInventory.id,
+            inventoryRef: getRef("inventories", activeInventory.id),
           });
         }
       }

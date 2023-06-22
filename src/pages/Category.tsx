@@ -14,7 +14,7 @@ import {
 } from "@ionic/react";
 import { useHistory, useLocation } from "react-router-dom";
 import { deleteDoc, where } from "firebase/firestore";
-import { getDocsByQuery, removeDoc } from "../operations";
+import { getDocsByQuery, getRef, removeDoc } from "../operations";
 import { Category } from "../schema";
 import { useMyStore } from "../store/store";
 
@@ -28,20 +28,21 @@ const CategoryListPage = () => {
 
   const fetchCategories = async () => {
     try {
-      const fetchedCategories = await getDocsByQuery<Category>(
-        "categories",
-        where("inventoryId", "==", activeInventory?.id)
-      );
-      setCategories(fetchedCategories);
+      if (activeInventory) {
+        const inventoryRef = getRef("inventories", activeInventory.id);
+        const fetchedCategories = await getDocsByQuery<Category>(
+          "categories",
+          where("inventoryRef", "==", inventoryRef )
+        );
+        setCategories(fetchedCategories);
+      }
     } catch (error) {
       console.error("Error fetching categories:", error);
     }
   };
 
   useEffect(() => {
-    if (activeInventory?.id) {
       fetchCategories();
-    }
   }, [activeInventory, location]);
 
   const handleCreate = () => {
@@ -68,9 +69,9 @@ const CategoryListPage = () => {
         </IonToolbar>
       </IonHeader>
       <IonContent fullscreen>
-      <IonAccordionGroup>
+        <IonAccordionGroup>
           {categories.map((category) => (
-            <IonAccordion value={category.id}>
+            <IonAccordion key={category.id} value={category.id}>
               <IonItem slot="header" color="light">
                 <IonLabel>{category.name}</IonLabel>
                 <div slot="end" />
@@ -118,7 +119,6 @@ const CategoryListPage = () => {
             </IonAccordion>
           ))}
         </IonAccordionGroup>
-        
       </IonContent>
     </IonPage>
   );

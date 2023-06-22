@@ -14,7 +14,7 @@ import {
 
 import { useHistory, useParams } from "react-router";
 import { useMyStore } from "../store/store";
-import { createDoc, getDocById, updateDoc } from "../operations";
+import { createDoc, getDocById, getRef, updateDoc } from "../operations";
 import { Category } from "../schema";
 import { useFormik } from "formik";
 
@@ -34,12 +34,12 @@ const CategoryEditPage = () => {
       if (activeInventory) {
         if (categoryId) {
           await updateDoc<Category>("categories", categoryId, {
-            inventoryId: activeInventory.id,
+            inventoryRef: getRef('inventories', activeInventory.id),
             name: values.name,
           });
         } else {
           await createDoc<Category>("categories", {
-            inventoryId: activeInventory.id,
+            inventoryRef:  getRef('inventories', activeInventory.id),
             name: values.name,
           });
         }

@@ -33,23 +33,33 @@ const LoginPage: React.FC = () => {
 
   return (
     <IonPage>
-    <IonContent>
-      <div style={{ margin: '2rem', padding: '2rem' }}>
-        <IonItem>
-          <IonLabel position="floating">Email</IonLabel>
-          <IonInput type="email" value={email} onIonChange={(e) => setEmail(e.detail.value!)} />
-        </IonItem>
-        <IonItem>
-          <IonLabel position="floating">Password</IonLabel>
-          <IonInput type="password" value={password} onIonChange={(e) => setPassword(e.detail.value!)} />
-        </IonItem>
-        <IonButton expand="full" onClick={handleLogin}>
-          Login
-        </IonButton>
-        <IonRouterLink className="my-2" routerLink="/register">Create an account</IonRouterLink>
-      </div>
-    </IonContent>
-  </IonPage>
+      <IonContent>
+        <div style={{ margin: "2rem", padding: "2rem" }}>
+          <IonItem>
+            <IonLabel position="floating">Email</IonLabel>
+            <IonInput
+              type="email"
+              value={email}
+              onIonChange={(e) => setEmail(e.detail.value!)}
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="floating">Password</IonLabel>
+            <IonInput
+              type="password"
+              value={password}
+              onIonChange={(e) => setPassword(e.detail.value!)}
+            />
+          </IonItem>
+          <IonButton expand="full" onClick={handleLogin}>
+            Login
+          </IonButton>
+          <IonRouterLink className="my-2" routerLink="/register">
+            Create an account
+          </IonRouterLink>
+        </div>
+      </IonContent>
+    </IonPage>
   );
 };
 

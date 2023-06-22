@@ -43,7 +43,7 @@ import "@ionic/react/css/display.css";
 /* Theme variables */
 import "./theme/variables.css";
 import Dashboard from "./pages/Dashboard";
-import In from "./pages/In";
+import In from "./pages/StockIn";
 import Out from "./pages/Out";
 import Settings from "./pages/Settings";
 import Category from "./pages/Category";
@@ -62,6 +62,10 @@ import { Inventory } from "./schema";
 import ProductEditPage from "./pages/ProductEditPage";
 import SupplierListPage from "./pages/Supplier";
 import SupplierEditPage from "./pages/SupplierEditPage";
+import StockInListPage from "./pages/StockIn";
+import StockOutListPage from "./pages/StockOut";
+import StockOutEditPage from "./pages/StockOutEditForm";
+import StockInEditPage from "./pages/StockInEditForm";
 
 setupIonicReact();
 
@@ -134,18 +138,6 @@ const App: React.FC = () => {
               />
               <ProtectedRoute
                 exact
-                path="/in"
-                component={In}
-                authenticated={!!user}
-              />
-              <ProtectedRoute
-                exact
-                path="/out"
-                component={Out}
-                authenticated={!!user}
-              />
-              <ProtectedRoute
-                exact
                 path="/settings"
                 component={Settings}
                 authenticated={!!user}
@@ -186,6 +178,30 @@ const App: React.FC = () => {
                 component={SupplierEditPage}
                 authenticated={!!user}
               />
+              <ProtectedRoute
+                exact
+                path="/stockIns"
+                component={StockInListPage}
+                authenticated={!!user}
+              />
+              <ProtectedRoute
+                exact
+                path="/stockIns/:stockInId"
+                component={StockInEditPage}
+                authenticated={!!user}
+              />
+              <ProtectedRoute
+                exact
+                path="/stockOuts"
+                component={StockOutListPage}
+                authenticated={!!user}
+              />
+              <ProtectedRoute
+                exact
+                path="/stockOuts/:stockOutId"
+                component={StockOutEditPage}
+                authenticated={!!user}
+              />
             </IonRouterOutlet>
 
             <IonTabBar slot="bottom">
@@ -193,11 +209,11 @@ const App: React.FC = () => {
                 <IonIcon aria-hidden="true" icon={cloudOutline} />
                 <IonLabel>Dashboard</IonLabel>
               </IonTabButton>
-              <IonTabButton tab="in" href="/in">
+              <IonTabButton tab="in" href="/stockIns">
                 <IonIcon aria-hidden="true" icon={cloudUploadOutline} />
                 <IonLabel>In</IonLabel>
               </IonTabButton>
-              <IonTabButton tab="out" href="/out">
+              <IonTabButton tab="out" href="/stockOuts">
                 <IonIcon aria-hidden="true" icon={cloudDownloadOutline} />
                 <IonLabel>Out</IonLabel>
               </IonTabButton>

@@ -15,47 +15,47 @@ import {
 import { useHistory, useLocation } from "react-router-dom";
 import { Timestamp, deleteDoc, where } from "firebase/firestore";
 import { exeTransaction, getDocById, getDocsByQuery, getRef, removeDoc } from "../operations";
-import {  CurrentStock } from "../schema";
+import { CurrentStock, StockIn } from "../schema";
 import { useMyStore } from "../store/store";
 import dayjs from "../util/dayjs";
 
-const Dashboard = () => {
+const StockInListPage = () => {
   const history = useHistory();
-  const [currentStocks, setCurrentStocks] = useState<CurrentStock[]>([]);
+  const [stockIns, setStockIns] = useState<StockIn[]>([]);
   const [presentAlert] = useIonAlert();
   let location = useLocation();
 
   const [activeInventory] = useMyStore((s) => s.userStore.activeInventory);
 
-  const fetchCurrentStocks = async () => {
+  const fetchStockIns = async () => {
     try {
       if (activeInventory) {
-        const fetchedCurrentStocks = await getDocsByQuery<CurrentStock>(
-          "currentStocks",
+        const fetchedStockIns = await getDocsByQuery<StockIn>(
+          "stockIns",
           where(
             "inventoryRef",
             "==",
             getRef("inventories", activeInventory?.id)
           )
         );
-        setCurrentStocks(fetchedCurrentStocks);
+        setStockIns(fetchedStockIns);
       }
     } catch (error) {
-      console.error("Error fetching currentStocks:", error);
+      console.error("Error fetching stockIns:", error);
     }
   };
 
   useEffect(() => {
-    fetchCurrentStocks();
+    fetchStockIns();
   }, [activeInventory, location]);
 
   const handleCreate = () => {
-    history.push("/currentStocks/create");
+    history.push("/stockIns/create");
   };
 
-  const handleDelete = async (currentStockId: string, currentStockDoc: CurrentStock) => {
-    const stockRef = getRef('currentStocks', `${currentStockDoc.productRef.id}-${currentStockDoc.price}`);
-    const currentStockRef = getRef('currentStocks', currentStockId);
+  const handleDelete = async (stockInId: string, stockInDoc: StockIn) => {
+    const stockRef = getRef('currentStocks', `${stockInDoc.productRef.id}-${stockInDoc.price}`);
+    const stockInRef = getRef('stockIns', stockInId);
 
     exeTransaction(async (transaction ) => {
       const currentStock = await transaction.get(stockRef);
@@ -63,47 +63,57 @@ const Dashboard = () => {
         throw "No stock Record";
       } else {
         const stockQuantity = currentStock.data()?.quantity;
-        if (stockQuantity >= currentStockDoc.quantity) {
-          const quantity = stockQuantity - currentStockDoc.quantity;
+        if (stockQuantity >= stockInDoc.quantity) {
+          const quantity = stockQuantity - stockInDoc.quantity;
           transaction.update(stockRef, { quantity });
-          transaction.delete(currentStockRef)
+          transaction.delete(stockInRef);
         } else {
           throw "Can Not Remove as quantity already out";
         }
       }
     })
-    fetchCurrentStocks();
+    fetchStockIns();
   };
 
   return (
     <IonPage>
       <IonHeader>
         <IonToolbar>
-          <IonTitle>Stock</IonTitle>
-          {/* <IonButton slot="end" onClick={handleCreate}>
+          <IonTitle>StockIn</IonTitle>
+          <IonButton slot="end" onClick={handleCreate}>
             Create
-          </IonButton> */}
+          </IonButton>
         </IonToolbar>
       </IonHeader>
       <IonContent fullscreen>
         <IonAccordionGroup>
-          {currentStocks.map((currentStock) => (
-            <IonAccordion key={currentStock.id}  value={currentStock.id}>
+          {stockIns.map((stockIn) => (
+            <IonAccordion key={stockIn.id}  value={stockIn.id}>
               <IonItem slot="header" color="light">
-                <IonLabel>{currentStock.product?.name}</IonLabel>
-                <IonLabel>price-{currentStock.price}</IonLabel>
+                <IonLabel>{stockIn.product?.name}</IonLabel>
+                <IonLabel>
+                  {dayjs((stockIn.date as Timestamp).toDate()).format(
+                    "DD/MM/YYYY"
+                  )}
+                </IonLabel>
               </IonItem>
               <div className="ion-padding" slot="content">
                 <IonItem>
                   <IonLabel>
                     <h3>Price</h3>
-                    <p>{currentStock.price}</p>
+                    <p>{stockIn.price}</p>
                   </IonLabel>
                 </IonItem>
                 <IonItem>
                   <IonLabel>
                     <h3>Quantity</h3>
-                    <p>{currentStock.quantity}</p>
+                    <p>{stockIn.quantity}</p>
+                  </IonLabel>
+                </IonItem>
+                <IonItem>
+                  <IonLabel>
+                    <h3>supplier</h3>
+                    <p>{stockIn.supplier?.name}</p>
                   </IonLabel>
                 </IonItem>
                 <IonItem
@@ -126,7 +136,7 @@ const Dashboard = () => {
                             text: "OK",
                             role: "confirm",
                             handler: () => {
-                              handleDelete(currentStock.id, currentStock);
+                              handleDelete(stockIn.id, stockIn);
                             },
                           },
                         ],
@@ -145,4 +155,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default StockInListPage;

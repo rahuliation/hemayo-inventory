@@ -14,7 +14,7 @@ import {
 } from "@ionic/react";
 import { useHistory, useLocation } from "react-router-dom";
 import { getFirestore, collection, getDocs, where } from "firebase/firestore";
-import { getDocsByQuery, removeDoc } from "../operations";
+import { getDocsByQuery, getRef, removeDoc } from "../operations";
 import { Product } from "../schema";
 import { useMyStore } from "../store/store";
 
@@ -26,13 +26,19 @@ const ProductListPage = () => {
 
   const [activeInventory] = useMyStore((s) => s.userStore.activeInventory);
 
-  const fetchCategories = async () => {
+  const fetchProducts = async () => {
     try {
-      const fetchProduct = await getDocsByQuery<Product>(
-        "products",
-        where("inventoryId", "==", activeInventory?.id)
-      );
-      setProducts(fetchProduct);
+      if (activeInventory) {
+        const fetchProduct = await getDocsByQuery<Product>(
+          "products",
+          where(
+            "inventoryRef",
+            "==",
+            getRef("inventories", activeInventory?.id)
+          )
+        );
+        setProducts(fetchProduct);
+      }
     } catch (error) {
       console.error("Error fetching products:", error);
     }
@@ -40,9 +46,9 @@ const ProductListPage = () => {
 
   useEffect(() => {
     if (activeInventory?.id) {
-      fetchCategories();
+      fetchProducts();
     }
-    fetchCategories();
+    fetchProducts();
   }, [activeInventory, location]);
 
   const handleCreate = () => {
@@ -55,7 +61,7 @@ const ProductListPage = () => {
 
   const handleDelete = (productId: string) => {
     removeDoc("products", productId);
-    fetchCategories();
+    fetchProducts();
   };
 
   return (
@@ -74,7 +80,6 @@ const ProductListPage = () => {
             <IonAccordion key={product.id} value={product.id}>
               <IonItem slot="header" color="light">
                 <IonLabel>{product.name}</IonLabel>
-                <div slot="end" />
               </IonItem>
               <div className="ion-padding" slot="content">
                 <IonItem>
@@ -89,6 +94,14 @@ const ProductListPage = () => {
                     <p>{product.defaultSellingPrice}</p>
                   </IonLabel>
                 </IonItem>
+
+                <IonItem>
+                  <IonLabel>
+                    <h3>Default category</h3>
+                    <p>{product.category?.name as any}</p>
+                  </IonLabel>
+                </IonItem>
+
                 <IonItem
                   slot="end"
                   color="light"

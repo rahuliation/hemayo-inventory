@@ -1,5 +1,9 @@
 import {
+  DocumentData,
+  DocumentReference,
   QueryConstraint,
+  Transaction,
+  TransactionOptions,
   addDoc,
   collection,
   deleteDoc,
@@ -7,13 +11,24 @@ import {
   getDoc,
   getDocs,
   query,
+  runTransaction,
   setDoc,
 } from "firebase/firestore";
 import { db } from "./firebase";
 import _ from "lodash";
-import { CollectionName, getSchema } from "./schema";
+import { CollectionName, getCollection } from "./schema";
+
+export const getRef = (
+  collectionName: CollectionName,
+  id: string
+): DocumentReference<DocumentData> => doc(db, collectionName, id);
 
 
+export const generateRef = (
+  collectionName: CollectionName): DocumentReference<DocumentData> => {
+    const collectionRef = collection(db, collectionName);
+    return doc(collectionRef)
+  };
 
 export const getDocById = async <T>(
   collectionName: CollectionName,
@@ -39,8 +54,8 @@ export const updateDoc = async <T>(
   values: Partial<T>
 ) => {
   // Validate the provided values against the schema
-  const schema = getSchema(collectionName);
-  schema.parse(values);
+  const coll = getCollection(collectionName);
+  coll.schema.partial().parse(values);
 
   try {
     const docRef = doc(db, collectionName, id);
@@ -52,10 +67,7 @@ export const updateDoc = async <T>(
   }
 };
 
-export const removeDoc = async (
-  collectionName: CollectionName,
-  id: string
-) => {
+export const removeDoc = async (collectionName: CollectionName, id: string) => {
   try {
     const docRef = doc(db, collectionName, id);
     await deleteDoc(docRef);
@@ -68,11 +80,11 @@ export const removeDoc = async (
 
 export const createDoc = async <T>(
   collectionName: CollectionName,
-  values: Omit<T, 'id'>
+  values: Omit<T, "id">
 ): Promise<string> => {
   // Validate the provided values against the schema
-  const schema = getSchema(collectionName);
-  schema.parse(values);
+  const coll = getCollection(collectionName);
+  coll.schema.parse(values);
 
   try {
     const collectionRef = collection(db, collectionName);
@@ -106,12 +118,45 @@ export const getDocsByQuery = async <T>(
   ...queryConstraints: QueryConstraint[]
 ): Promise<T[]> => {
   try {
-    const q = query(collection(db, collectionName), ...queryConstraints);
+    const colRef = collection(db, collectionName);
+    const q = query(colRef, ...queryConstraints);
     const querySnapshot = await getDocs(q);
-    const data = querySnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    })) as T[];
+
+    const data = (await Promise.all(
+      querySnapshot.docs.map(async (doc) => {
+        ///loop through object to get loader . but it converted to array.. so we have to make it
+        const docData = await Promise.all(
+          _.map(doc.data(), async (val, key) => {
+            if (/.*Ref(s?)$/.test(key)) {
+              const collName = val.parent.id;
+              const { batchLoader } = getCollection(collName);
+              const keyName = _.replace(key, /Ref(s?)/, "");
+              return [
+                {
+                  key: keyName,
+                  val: await batchLoader.load(val.path),
+                },
+                {
+                  key,
+                  val,
+                },
+              ];
+            }
+            return {
+              key,
+              val,
+            };
+          })
+        ).then((res) =>
+          _.chain(res).flatMap().keyBy("key").mapValues("val").value()
+        );
+
+        return _.extend(docData, { id: doc.id });
+      })
+    )) as T[];
+
+    // await Promise.all(_.map(dispatchers, dispatch => dispatch()))
+
     return data;
   } catch (error) {
     console.error("Error fetching documents:", error);
@@ -119,4 +164,9 @@ export const getDocsByQuery = async <T>(
   }
 };
 
-// Helper function to get the schema based on the collection name
+export const exeTransaction = async <T>(
+  updateFunction: (transaction: Transaction) => Promise<T>,
+  options?: TransactionOptions
+): Promise<T> => {
+  return runTransaction(db, updateFunction, options);
+};

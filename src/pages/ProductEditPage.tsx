@@ -14,12 +14,13 @@ import {
   IonSelectOption,
 } from "@ionic/react";
 
-import { useHistory, useParams } from "react-router";
+import { useHistory, useLocation, useParams } from "react-router";
 import { useMyStore } from "../store/store";
 import {
   createDoc,
   getDocById,
   getDocsByQuery,
+  getRef,
   updateDoc,
 } from "../operations";
 import { Category, Product } from "../schema";
@@ -28,28 +29,40 @@ import { useFormik } from "formik";
 import { where } from "firebase/firestore";
 import { Optional } from "utility-types";
 
+
+
+
 const ProductEditPage = () => {
   const history = useHistory();
+  const location = useLocation();
+
   const { productId: productIdParam } = useParams<{ productId: string }>();
   const productId = productIdParam === "create" ? null : productIdParam;
 
   const [activeInventory] = useMyStore((s) => s.userStore.activeInventory);
   const [categoryOptions, setCategoryOptions] = useState<Category[]>([]);
-  const [product, setProduct] = useState< Optional<Product, 'id'>>({
+  const initProduct = {
     name: "",
     defaultBuyingPrice: 0,
     defaultSellingPrice: 0,
-    categoryId: "",
-    inventoryId: activeInventory?.id ?? ""
-  });
+    categoryRef: "",
+    inventoryRef: activeInventory?.id,
+  };
+  const [product, setProduct] = useState<Optional<Product, "id">>(initProduct);
 
   const fetchCategoryOptions = async () => {
     try {
-      const fetchedCategories = await getDocsByQuery<Category>(
-        "categories",
-        where("inventoryId", "==", activeInventory?.id)
-      );
-      setCategoryOptions(fetchedCategories);
+      if (activeInventory) {
+        const fetchedCategories = await getDocsByQuery<Category>(
+          "categories",
+          where(
+            "inventoryRef",
+            "==",
+            getRef("inventories", activeInventory?.id)
+          )
+        );
+        setCategoryOptions(fetchedCategories);
+      }
     } catch (error) {
       console.error("Error fetching categories:", error);
     }
@@ -57,32 +70,32 @@ const ProductEditPage = () => {
 
   const fetchProduct = async () => {
     try {
-      if(productId) {
+      if (productId) {
         const product = await getDocById<Product>("products", productId);
         if (product) {
           setProduct(product);
         }
       }
-
     } catch (error) {
       console.error("Error fetching product:", error);
     }
   };
 
-
-  const onSubmit = async (values: Optional<Product, "id" | 'inventoryId'>) => {
+  const onSubmit = async (values: Optional<Product, "id" | "inventoryRef">) => {
     try {
       if (activeInventory) {
         // Create or update the product with the selected category
         if (productId) {
-          await updateDoc("products", productId, {
+          await updateDoc<Product>("products", productId, {
             ...values,
-            inventoryId: activeInventory.id,
+            categoryRef: getRef("categories", values.categoryRef),
+            inventoryRef: getRef("inventories", activeInventory.id),
           });
         } else {
-          await createDoc("products",  {
+          await createDoc<Product>("products", {
             ...values,
-            inventoryId: activeInventory.id,
+            categoryRef: getRef("categories", values.categoryRef),
+            inventoryRef: getRef("inventories", activeInventory.id),
           });
         }
       }
@@ -96,7 +109,8 @@ const ProductEditPage = () => {
 
   const formik = useFormik({
     initialValues: {
-        ...product
+      ...product,
+      categoryRef: product.categoryRef.id,
     },
     onSubmit,
     enableReinitialize: true,
@@ -105,13 +119,11 @@ const ProductEditPage = () => {
   useEffect(() => {
     if (productId) {
       fetchProduct();
+    } else {
+      setProduct(initProduct)
     }
-    if(activeInventory) {
-      fetchCategoryOptions();
-    }
-  }, [productId, activeInventory]);
-
-
+    fetchCategoryOptions();
+  }, [productId, activeInventory, location]);
 
   return (
     <IonPage>
@@ -125,8 +137,8 @@ const ProductEditPage = () => {
       <IonContent>
         <form onSubmit={formik.handleSubmit}>
           <IonItem>
-            <IonLabel position="floating">Product Name</IonLabel>
             <IonInput
+              label="Product Name"
               type="text"
               id="name"
               name="name"
@@ -140,8 +152,8 @@ const ProductEditPage = () => {
           ) : null}
 
           <IonItem>
-            <IonLabel>Default Buying Price</IonLabel>
             <IonInput
+              label="Buying Price"
               type="number"
               id="defaultBuyingPrice"
               name="defaultBuyingPrice"
@@ -157,8 +169,8 @@ const ProductEditPage = () => {
           ) : null}
 
           <IonItem>
-            <IonLabel>Default Selling Price</IonLabel>
             <IonInput
+              label="Selling Price"
               type="number"
               id="defaultSellingPrice"
               name="defaultSellingPrice"
@@ -173,15 +185,15 @@ const ProductEditPage = () => {
           ) : null}
 
           <IonItem>
-            <IonLabel>Category</IonLabel>
             <IonSelect
-              id="categoryId"
-              name="categoryId"
-              value={formik.values.categoryId}
+              label="Category"
+              id="categoryRef"
+              name="categoryRef"
+              placeholder="Select"
+              value={formik.values.categoryRef}
               onIonChange={formik.handleChange}
               onIonBlur={formik.handleBlur}
             >
-              <IonSelectOption value="">Select Category</IonSelectOption>
               {categoryOptions.map((category) => (
                 <IonSelectOption key={category.id} value={category.id}>
                   {category.name}
@@ -189,8 +201,8 @@ const ProductEditPage = () => {
               ))}
             </IonSelect>
           </IonItem>
-          {formik.touched.categoryId && formik.errors.categoryId ? (
-            <div>{formik.errors.categoryId}</div>
+          {formik.touched.categoryRef && formik.errors.categoryRef ? (
+            <div>{formik.errors.categoryRef as string}</div>
           ) : null}
 
           <IonButton expand="block" type="submit">

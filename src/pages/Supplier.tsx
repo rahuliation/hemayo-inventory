@@ -16,7 +16,7 @@ import {
 } from "@ionic/react";
 import { useHistory, useLocation } from "react-router-dom";
 import { deleteDoc, where } from "firebase/firestore";
-import { getDocsByQuery, removeDoc } from "../operations";
+import { getDocsByQuery, getRef, removeDoc } from "../operations";
 import { Supplier } from "../schema";
 import { useMyStore } from "../store/store";
 
@@ -30,20 +30,24 @@ const SupplierListPage = () => {
 
   const fetchSuppliers = async () => {
     try {
-      const fetchedSuppliers = await getDocsByQuery<Supplier>(
-        "suppliers",
-        where("inventoryId", "==", activeInventory?.id)
-      );
-      setSuppliers(fetchedSuppliers);
+      if (activeInventory) {
+        const fetchedSuppliers = await getDocsByQuery<Supplier>(
+          "suppliers",
+          where(
+            "inventoryRef",
+            "==",
+            getRef("inventories", activeInventory?.id)
+          )
+        );
+        setSuppliers(fetchedSuppliers);
+      }
     } catch (error) {
       console.error("Error fetching suppliers:", error);
     }
   };
 
   useEffect(() => {
-    if (activeInventory?.id) {
-      fetchSuppliers();
-    }
+    fetchSuppliers();
   }, [activeInventory, location]);
 
   const handleCreate = () => {

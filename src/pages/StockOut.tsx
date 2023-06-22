@@ -14,96 +14,96 @@ import {
 } from "@ionic/react";
 import { useHistory, useLocation } from "react-router-dom";
 import { Timestamp, deleteDoc, where } from "firebase/firestore";
-import { exeTransaction, getDocById, getDocsByQuery, getRef, removeDoc } from "../operations";
-import {  CurrentStock } from "../schema";
+import { exeTransaction, getDocsByQuery, getRef, removeDoc } from "../operations";
+import { StockOut } from "../schema";
 import { useMyStore } from "../store/store";
 import dayjs from "../util/dayjs";
 
-const Dashboard = () => {
+const StockOutListPage = () => {
   const history = useHistory();
-  const [currentStocks, setCurrentStocks] = useState<CurrentStock[]>([]);
+  const [stockOuts, setStockOuts] = useState<StockOut[]>([]);
   const [presentAlert] = useIonAlert();
   let location = useLocation();
 
   const [activeInventory] = useMyStore((s) => s.userStore.activeInventory);
 
-  const fetchCurrentStocks = async () => {
+  const fetchStockOuts = async () => {
     try {
       if (activeInventory) {
-        const fetchedCurrentStocks = await getDocsByQuery<CurrentStock>(
-          "currentStocks",
+        const fetchedStockOuts = await getDocsByQuery<StockOut>(
+          "stockOuts",
           where(
             "inventoryRef",
             "==",
             getRef("inventories", activeInventory?.id)
           )
         );
-        setCurrentStocks(fetchedCurrentStocks);
+        setStockOuts(fetchedStockOuts);
       }
     } catch (error) {
-      console.error("Error fetching currentStocks:", error);
+      console.error("Error fetching stockOuts:", error);
     }
   };
 
   useEffect(() => {
-    fetchCurrentStocks();
+    fetchStockOuts();
   }, [activeInventory, location]);
 
   const handleCreate = () => {
-    history.push("/currentStocks/create");
+    history.push("/stockOuts/create");
   };
 
-  const handleDelete = async (currentStockId: string, currentStockDoc: CurrentStock) => {
-    const stockRef = getRef('currentStocks', `${currentStockDoc.productRef.id}-${currentStockDoc.price}`);
-    const currentStockRef = getRef('currentStocks', currentStockId);
+
+  const handleDelete = async (stockOutId: string, stockOut: StockOut) => {
+    const stockRef = getRef('currentStocks', stockOut.currentStockRef.id);
+    const stockOutRef = getRef('stockOuts', stockOutId);
 
     exeTransaction(async (transaction ) => {
       const currentStock = await transaction.get(stockRef);
       if (!currentStock.exists()) {
         throw "No stock Record";
       } else {
-        const stockQuantity = currentStock.data()?.quantity;
-        if (stockQuantity >= currentStockDoc.quantity) {
-          const quantity = stockQuantity - currentStockDoc.quantity;
-          transaction.update(stockRef, { quantity });
-          transaction.delete(currentStockRef)
-        } else {
-          throw "Can Not Remove as quantity already out";
-        }
+        const quantity = currentStock.data()?.quantity - stockOut.quantity;
+        transaction.update(stockRef, { quantity });
+        transaction.delete(stockOutRef)
       }
     })
-    fetchCurrentStocks();
+    fetchStockOuts();
   };
 
   return (
     <IonPage>
       <IonHeader>
         <IonToolbar>
-          <IonTitle>Stock</IonTitle>
-          {/* <IonButton slot="end" onClick={handleCreate}>
+          <IonTitle>StockOut</IonTitle>
+          <IonButton slot="end" onClick={handleCreate}>
             Create
-          </IonButton> */}
+          </IonButton>
         </IonToolbar>
       </IonHeader>
       <IonContent fullscreen>
         <IonAccordionGroup>
-          {currentStocks.map((currentStock) => (
-            <IonAccordion key={currentStock.id}  value={currentStock.id}>
+          {stockOuts.map((stockOut) => (
+            <IonAccordion  key={stockOut.id}  value={stockOut.id}>
               <IonItem slot="header" color="light">
-                <IonLabel>{currentStock.product?.name}</IonLabel>
-                <IonLabel>price-{currentStock.price}</IonLabel>
+                <IonLabel>{stockOut.product?.name}</IonLabel>
+                <IonLabel>
+                  {dayjs((stockOut.date as Timestamp).toDate()).format(
+                    "DD/MM/YYYY"
+                  )}
+                </IonLabel>
               </IonItem>
               <div className="ion-padding" slot="content">
                 <IonItem>
                   <IonLabel>
                     <h3>Price</h3>
-                    <p>{currentStock.price}</p>
+                    <p>{stockOut.price}</p>
                   </IonLabel>
                 </IonItem>
                 <IonItem>
                   <IonLabel>
                     <h3>Quantity</h3>
-                    <p>{currentStock.quantity}</p>
+                    <p>{stockOut.quantity}</p>
                   </IonLabel>
                 </IonItem>
                 <IonItem
@@ -126,7 +126,7 @@ const Dashboard = () => {
                             text: "OK",
                             role: "confirm",
                             handler: () => {
-                              handleDelete(currentStock.id, currentStock);
+                              handleDelete(stockOut.id, stockOut);
                             },
                           },
                         ],
@@ -145,4 +145,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default StockOutListPage;
