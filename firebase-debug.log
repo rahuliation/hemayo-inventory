@@ -1,0 +1,14 @@
+[debug] [2023-06-22T10:52:57.316Z] ----------------------------------------------------------------------
+[debug] [2023-06-22T10:52:57.318Z] Command:       /home/rahul/.nvm/versions/node/v18.16.0/bin/node /home/rahul/.nvm/versions/node/v18.16.0/bin/firebase deploy
+[debug] [2023-06-22T10:52:57.318Z] CLI Version:   12.3.1
+[debug] [2023-06-22T10:52:57.319Z] Platform:      linux
+[debug] [2023-06-22T10:52:57.319Z] Node Version:  v18.16.0
+[debug] [2023-06-22T10:52:57.319Z] Time:          Thu Jun 22 2023 16:52:57 GMT+0600 (Bangladesh Standard Time)
+[debug] [2023-06-22T10:52:57.319Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2023-06-22T10:52:57.375Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2023-06-22T10:52:57.375Z] > authorizing via signed-in user (rahuliation@gmail.com)
+[debug] [2023-06-22T10:52:57.376Z] [iam] checking project hemayo-inventory for permissions ["firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2023-06-22T10:52:57.377Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/hemayo-inventory:testIamPermissions [none]
+[debug] [2023-06-22T10:52:57.377Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/hemayo-inventory:testIamPermissions x-goog-quota-user=projects/hemayo-inventory
+[debug] [2023-06-22T10:52:57.378Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/hemayo-inventory:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}

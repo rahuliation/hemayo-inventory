@@ -107,6 +107,7 @@ const StockInEditPage = () => {
           inventoryRef: inventoryRef,
           price: values.price,
           quantity: values.quantity,
+          currentStockRef: stockId
         };
 
         await exeTransaction(async (transaction) => {

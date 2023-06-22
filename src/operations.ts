@@ -23,12 +23,12 @@ export const getRef = (
   id: string
 ): DocumentReference<DocumentData> => doc(db, collectionName, id);
 
-
 export const generateRef = (
-  collectionName: CollectionName): DocumentReference<DocumentData> => {
-    const collectionRef = collection(db, collectionName);
-    return doc(collectionRef)
-  };
+  collectionName: CollectionName
+): DocumentReference<DocumentData> => {
+  const collectionRef = collection(db, collectionName);
+  return doc(collectionRef);
+};
 
 export const getDocById = async <T>(
   collectionName: CollectionName,
@@ -38,7 +38,7 @@ export const getDocById = async <T>(
     const docRef = doc(db, collectionName, id);
     const docSnapshot = await getDoc(docRef);
     if (docSnapshot.exists()) {
-      return { id: docSnapshot.id, ...docSnapshot.data() } as T;
+      return processData(docSnapshot) as T;
     } else {
       return null;
     }
@@ -102,15 +102,44 @@ export const getDocsAll = async <T>(
 ): Promise<T[]> => {
   try {
     const querySnapshot = await getDocs(collection(db, collectionName));
-    const data = querySnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    })) as T[];
+
+    const data = (await Promise.all(
+      _.map(querySnapshot.docs, processData)
+    )) as T[];
     return data;
   } catch (error) {
     console.error("Error fetching documents:", error);
     throw error;
   }
+};
+
+const processData = async (doc: DocumentData) => {
+  ///loop through object to get loader . but it converted to array.. so we have to make it
+  const docData = await Promise.all(
+    _.map(doc.data(), async (val, key) => {
+      if (/.*Ref(s?)$/.test(key)) {
+        const collName = val.parent.id;
+        const { batchLoader } = getCollection(collName);
+        const keyName = _.replace(key, /Ref(s?)/, "");
+        return [
+          {
+            key: keyName,
+            val: await batchLoader.load(val.path),
+          },
+          {
+            key,
+            val,
+          },
+        ];
+      }
+      return {
+        key,
+        val,
+      };
+    })
+  ).then((res) => _.chain(res).flatMap().keyBy("key").mapValues("val").value());
+
+  return _.extend(docData, { id: doc.id });
 };
 
 export const getDocsByQuery = async <T>(
@@ -123,36 +152,7 @@ export const getDocsByQuery = async <T>(
     const querySnapshot = await getDocs(q);
 
     const data = (await Promise.all(
-      querySnapshot.docs.map(async (doc) => {
-        ///loop through object to get loader . but it converted to array.. so we have to make it
-        const docData = await Promise.all(
-          _.map(doc.data(), async (val, key) => {
-            if (/.*Ref(s?)$/.test(key)) {
-              const collName = val.parent.id;
-              const { batchLoader } = getCollection(collName);
-              const keyName = _.replace(key, /Ref(s?)/, "");
-              return [
-                {
-                  key: keyName,
-                  val: await batchLoader.load(val.path),
-                },
-                {
-                  key,
-                  val,
-                },
-              ];
-            }
-            return {
-              key,
-              val,
-            };
-          })
-        ).then((res) =>
-          _.chain(res).flatMap().keyBy("key").mapValues("val").value()
-        );
-
-        return _.extend(docData, { id: doc.id });
-      })
+      _.map(querySnapshot.docs, processData)
     )) as T[];
 
     // await Promise.all(_.map(dispatchers, dispatch => dispatch()))
