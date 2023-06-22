@@ -14,8 +14,14 @@ import {
 } from "@ionic/react";
 import { useHistory, useLocation } from "react-router-dom";
 import { Timestamp, deleteDoc, where } from "firebase/firestore";
-import { exeTransaction, getDocById, getDocsByQuery, getRef, removeDoc } from "../operations";
-import {  CurrentStock } from "../schema";
+import {
+  exeTransaction,
+  getDocById,
+  getDocsByQuery,
+  getRef,
+  removeDoc,
+} from "../operations";
+import { CurrentStock } from "../schema";
 import { useMyStore } from "../store/store";
 import dayjs from "../util/dayjs";
 
@@ -53,11 +59,17 @@ const Dashboard = () => {
     history.push("/currentStocks/create");
   };
 
-  const handleDelete = async (currentStockId: string, currentStockDoc: CurrentStock) => {
-    const stockRef = getRef('currentStocks', `${currentStockDoc.productRef.id}-${currentStockDoc.price}`);
-    const currentStockRef = getRef('currentStocks', currentStockId);
+  const handleDelete = async (
+    currentStockId: string,
+    currentStockDoc: CurrentStock
+  ) => {
+    const stockRef = getRef(
+      "currentStocks",
+      `${currentStockDoc.productRef.id}-${currentStockDoc.price}`
+    );
+    const currentStockRef = getRef("currentStocks", currentStockId);
 
-    exeTransaction(async (transaction ) => {
+    exeTransaction(async (transaction) => {
       const currentStock = await transaction.get(stockRef);
       if (!currentStock.exists()) {
         throw "No stock Record";
@@ -66,12 +78,12 @@ const Dashboard = () => {
         if (stockQuantity >= currentStockDoc.quantity) {
           const quantity = stockQuantity - currentStockDoc.quantity;
           transaction.update(stockRef, { quantity });
-          transaction.delete(currentStockRef)
+          transaction.delete(currentStockRef);
         } else {
           throw "Can Not Remove as quantity already out";
         }
       }
-    })
+    });
     fetchCurrentStocks();
   };
 
@@ -79,7 +91,7 @@ const Dashboard = () => {
     <IonPage>
       <IonHeader>
         <IonToolbar>
-          <IonTitle>Stock</IonTitle>
+          <IonTitle>Current Stock</IonTitle>
           {/* <IonButton slot="end" onClick={handleCreate}>
             Create
           </IonButton> */}
@@ -88,10 +100,12 @@ const Dashboard = () => {
       <IonContent fullscreen>
         <IonAccordionGroup>
           {currentStocks.map((currentStock) => (
-            <IonAccordion key={currentStock.id}  value={currentStock.id}>
-              <IonItem slot="header" color="light">
-                <IonLabel>{currentStock.product?.name}</IonLabel>
-                <IonLabel>price-{currentStock.price}</IonLabel>
+            <IonAccordion key={currentStock.id} value={currentStock.id}>
+              <IonItem slot="header" button={true} color="light">
+                <IonLabel slot="start">
+                  {currentStock.product?.name} - {currentStock.price}
+                </IonLabel>
+                <IonLabel slot="end">Stock: {currentStock.quantity}</IonLabel>
               </IonItem>
               <div className="ion-padding" slot="content">
                 <IonItem>

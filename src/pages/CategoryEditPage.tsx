@@ -9,6 +9,7 @@ import {
   IonItem,
   IonLabel,
   IonPage,
+  IonTitle,
   IonToolbar,
 } from "@ionic/react";
 
@@ -81,6 +82,7 @@ const CategoryEditPage = () => {
           <IonButtons slot="start">
             <IonBackButton defaultHref="/categories" />
           </IonButtons>
+          <IonTitle> Category Entry</IonTitle>
         </IonToolbar>
       </IonHeader>
       <IonContent>

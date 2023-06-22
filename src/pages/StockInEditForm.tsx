@@ -10,6 +10,7 @@ import {
   IonPage,
   IonSelect,
   IonSelectOption,
+  IonTitle,
   IonToolbar,
 } from "@ionic/react";
 
@@ -97,7 +98,7 @@ const StockInEditPage = () => {
           "currentStocks",
           `${values.productRef}-${values.price}`
         );
-        const supplierRef = getRef("suppliers", values.productRef);
+        const supplierRef = getRef("suppliers", values.supplierRef);
         const productRef = getRef("products", values.productRef);
         const inventoryRef = getRef("inventories", activeInventory.id);
         const stockInDoc = {
@@ -158,6 +159,7 @@ const StockInEditPage = () => {
           <IonButtons slot="start">
             <IonBackButton defaultHref="/stockIns" />
           </IonButtons>
+          <IonTitle> Stock In Entry</IonTitle>
         </IonToolbar>
       </IonHeader>
       <IonContent>

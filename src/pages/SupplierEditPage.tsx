@@ -10,6 +10,7 @@ import {
   IonLabel,
   IonPage,
   IonTextarea,
+  IonTitle,
   IonToolbar,
 } from "@ionic/react";
 
@@ -91,6 +92,8 @@ const SupplierEditPage = () => {
           <IonButtons slot="start">
             <IonBackButton defaultHref="/suppliers" />
           </IonButtons>
+          <IonTitle> Supplier Entry</IonTitle>
+
         </IonToolbar>
       </IonHeader>
       <IonContent>

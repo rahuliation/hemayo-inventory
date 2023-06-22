@@ -18,6 +18,7 @@ import {
   cloudUpload,
   cloudUploadOutline,
   ellipse,
+  ellipsisVerticalOutline,
   logIn,
   logOut,
   settings,
@@ -66,6 +67,8 @@ import StockInListPage from "./pages/StockIn";
 import StockOutListPage from "./pages/StockOut";
 import StockOutEditPage from "./pages/StockOutEditForm";
 import StockInEditPage from "./pages/StockInEditForm";
+import ExpenseListPage from "./pages/Expense";
+import ExpenseEditPage from "./pages/ExpenseEditForm";
 
 setupIonicReact();
 
@@ -202,6 +205,18 @@ const App: React.FC = () => {
                 component={StockOutEditPage}
                 authenticated={!!user}
               />
+              <ProtectedRoute
+                exact
+                path="/expenses"
+                component={ExpenseListPage}
+                authenticated={!!user}
+              />
+              <ProtectedRoute
+                exact
+                path="/expenses/:expensesId"
+                component={ExpenseEditPage}
+                authenticated={!!user}
+              />
             </IonRouterOutlet>
 
             <IonTabBar slot="bottom">
@@ -218,7 +233,7 @@ const App: React.FC = () => {
                 <IonLabel>Out</IonLabel>
               </IonTabButton>
               <IonTabButton tab="settings" href="/settings">
-                <IonIcon aria-hidden="true" icon={settingsOutline} />
+                <IonIcon aria-hidden="true" icon={ellipsisVerticalOutline} />
                 <IonLabel>Settings</IonLabel>
               </IonTabButton>
             </IonTabBar>

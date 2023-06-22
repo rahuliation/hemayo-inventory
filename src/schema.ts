@@ -13,14 +13,11 @@ import {
 
 const batchLoader = async (keys: readonly string[]) => {
   const collName = _.first(_.split(_.first(keys), "/")) as string;
-
   const collectionRef = collection(db, collName);
-
   const idChanks = _.chunk(
     _.map(keys, (key) => doc(db, key)),
     30
   );
-
   const data = await Promise.all(
     _.map(idChanks, async (ids) => {
       const q = query(collectionRef, where(documentId(), "in", ids));
@@ -87,6 +84,7 @@ export type StockIn = z.infer<typeof stockInSchema> &
     product?: Product;
     invenotry?: Inventory;
     supplier?: Supplier;
+    currentStock?: CurrentStock;
   };
 
 export const stockOutSchema = z.object({
@@ -103,6 +101,7 @@ export type StockOut = z.infer<typeof stockOutSchema> &
   BaseModel & {
     product?: Product;
     invenotry?: Inventory;
+    currentStock?: CurrentStock;
   };
 
 export const currentStockSchema = z.object({
@@ -118,6 +117,27 @@ export type CurrentStock = z.infer<typeof currentStockSchema> &
     product?: Product;
     invenotry?: Inventory;
     supplier?: Supplier;
+    editable?: StockIn | StockOut;
+  };
+
+export const expenseType = {
+  marketing: "Marketing",
+  discount: "Discount",
+  delivery: "Delivery",
+  packaging: "Packaging",
+  other: "Other",
+};
+
+export const expenseSchema = z.object({
+  date: z.any(),
+  category: z.string(),
+  inventoryRef: z.any(),
+  amount: z.number().min(1),
+});
+
+export type Expense = z.infer<typeof expenseSchema> &
+  BaseModel & {
+    invenotry?: Inventory;
   };
 
 const collections = {
@@ -139,7 +159,9 @@ const collections = {
   },
   currentStocks: {
     schema: currentStockSchema,
-    batchLoader: new DataLoader<string, unknown>((keys) => batchLoader(keys)),
+    batchLoader: new DataLoader<string, unknown>((keys) => batchLoader(keys), {
+      cache: false,
+    }),
   },
   stockIns: {
     schema: stockInSchema,
@@ -147,6 +169,10 @@ const collections = {
   },
   stockOuts: {
     schema: stockOutSchema,
+    batchLoader: new DataLoader<string, unknown>((keys) => batchLoader(keys)),
+  },
+  expenses: {
+    schema: expenseSchema,
     batchLoader: new DataLoader<string, unknown>((keys) => batchLoader(keys)),
   },
 };

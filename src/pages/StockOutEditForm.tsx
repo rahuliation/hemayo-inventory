@@ -9,6 +9,7 @@ import {
   IonItem,
   IonLabel,
   IonPage,
+  IonTitle,
   IonToolbar,
 } from "@ionic/react";
 
@@ -140,6 +141,7 @@ const StockOutEditPage = () => {
           <IonButtons slot="start">
             <IonBackButton defaultHref="/stockOuts" />
           </IonButtons>
+          <IonTitle> Stock Out Entry</IonTitle>
         </IonToolbar>
       </IonHeader>
       <IonContent>

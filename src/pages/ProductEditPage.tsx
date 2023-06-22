@@ -12,6 +12,7 @@ import {
   IonToolbar,
   IonSelect,
   IonSelectOption,
+  IonTitle,
 } from "@ionic/react";
 
 import { useHistory, useLocation, useParams } from "react-router";
@@ -132,6 +133,8 @@ const ProductEditPage = () => {
           <IonButtons slot="start">
             <IonBackButton defaultHref="/products" />
           </IonButtons>
+          <IonTitle> Product Entry</IonTitle>
+
         </IonToolbar>
       </IonHeader>
       <IonContent>
