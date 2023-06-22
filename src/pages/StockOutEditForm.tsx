@@ -176,7 +176,7 @@ const StockOutEditPage = () => {
                 );
                 setMax(stocked.quantity);
                 formik.setFieldValue("productRef", stocked.productRef.id);
-                formik.setFieldValue("byingPrice", stocked.price);
+                formik.setFieldValue("buyingPrice", stocked.price);
               }
               formik.setFieldValue("currentStockId", val);
             }}

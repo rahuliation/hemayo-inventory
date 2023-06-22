@@ -16,9 +16,12 @@ import {
   IonCardSubtitle,
   IonCardTitle,
   IonCardContent,
+  IonDatetimeButton,
+  IonModal,
+  IonDatetime,
 } from "@ionic/react";
 import { useHistory, useLocation } from "react-router-dom";
-import { Timestamp, deleteDoc, where } from "firebase/firestore";
+import { Timestamp, where } from "firebase/firestore";
 import {
   exeTransaction,
   getDocById,
@@ -34,12 +37,18 @@ import _ from "lodash";
 const StockInListPage = () => {
   const history = useHistory();
   const [stockIns, setStockIns] = useState<StockIn[]>([]);
+  const [startDate, setStartDate] = useState(dayjs().startOf("month"));
+  const [endDate, setEndDate] = useState(dayjs().endOf("month"));
+
   const [presentAlert] = useIonAlert();
   let location = useLocation();
 
   const [activeInventory] = useMyStore((s) => s.userStore.activeInventory);
 
   const fetchStockIns = async () => {
+    const startDateTimestamp = Timestamp.fromDate(startDate.toDate());
+    const endDateTimestamp = Timestamp.fromDate(endDate.toDate());
+
     try {
       if (activeInventory) {
         const fetchedStockIns = await getDocsByQuery<StockIn>(
@@ -48,8 +57,11 @@ const StockInListPage = () => {
             "inventoryRef",
             "==",
             getRef("inventories", activeInventory?.id)
-          )
+          ),
+          where("date", ">=", startDateTimestamp),
+          where("date", "<=", endDateTimestamp)
         );
+
         setStockIns(fetchedStockIns);
       }
     } catch (error) {
@@ -59,7 +71,7 @@ const StockInListPage = () => {
 
   useEffect(() => {
     fetchStockIns();
-  }, [activeInventory, location]);
+  }, [activeInventory, location, startDate, endDate]);
 
   const handleCreate = () => {
     history.push("/stockIns/create");
@@ -94,7 +106,7 @@ const StockInListPage = () => {
     <IonPage>
       <IonHeader>
         <IonToolbar>
-          <IonTitle>StockIn</IonTitle>
+          <IonTitle>Stock In</IonTitle>
           <IonButton slot="end" onClick={handleCreate}>
             Create
           </IonButton>
@@ -117,7 +129,33 @@ const StockInListPage = () => {
               </IonItem>
             </IonCardSubtitle>
           </IonCardHeader>
-          <IonCardContent>Date Filter</IonCardContent>
+          <IonCardContent>
+            <IonItem>
+              <IonDatetimeButton slot="start" datetime="startDate" />
+              <IonDatetimeButton slot="end" datetime="endDate" />
+            </IonItem>
+
+            <IonModal keepContentsMounted={true}>
+              <IonDatetime
+                value={startDate.format("YYYY-MM-DDTHH:mm")}
+                onIonChange={(e) => {
+                  setStartDate(dayjs(new Date(e.target.value as string)))
+                }}
+                presentation="date"
+                id="startDate"
+              />
+            </IonModal>
+            <IonModal keepContentsMounted={true}>
+              <IonDatetime
+                value={endDate.format("YYYY-MM-DDTHH:mm")}
+                onIonChange={(e) => {
+                    setEndDate(dayjs(new Date(e.target.value as string)))
+                }}
+                presentation="date"
+                id="endDate"
+              />
+            </IonModal>
+          </IonCardContent>
         </IonCard>
         <IonAccordionGroup>
           {stockIns.map((stockIn) => (

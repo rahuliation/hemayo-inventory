@@ -16,6 +16,12 @@ import {
   IonCardTitle,
   IonCardSubtitle,
   IonCard,
+  IonDatetimeButton,
+  IonModal,
+  IonDatetime,
+  IonGrid,
+  IonRow,
+  IonCol,
 } from "@ionic/react";
 import { useHistory, useLocation } from "react-router-dom";
 import { Timestamp, deleteDoc, where } from "firebase/firestore";
@@ -38,7 +44,12 @@ const StockOutListPage = () => {
 
   const [activeInventory] = useMyStore((s) => s.userStore.activeInventory);
 
+  const [startDate, setStartDate] = useState(dayjs().startOf("month"));
+  const [endDate, setEndDate] = useState(dayjs().endOf("month"));
+
   const fetchStockOuts = async () => {
+    const startDateTimestamp = Timestamp.fromDate(startDate.toDate());
+    const endDateTimestamp = Timestamp.fromDate(endDate.toDate());
     try {
       if (activeInventory) {
         const fetchedStockOuts = await getDocsByQuery<StockOut>(
@@ -47,7 +58,9 @@ const StockOutListPage = () => {
             "inventoryRef",
             "==",
             getRef("inventories", activeInventory?.id)
-          )
+          ),
+          where("date", ">=", startDateTimestamp),
+          where("date", "<=", endDateTimestamp)
         );
         setStockOuts(fetchedStockOuts);
       }
@@ -58,7 +71,7 @@ const StockOutListPage = () => {
 
   useEffect(() => {
     fetchStockOuts();
-  }, [activeInventory, location]);
+  }, [activeInventory, location, startDate, endDate]);
 
   const handleCreate = () => {
     history.push("/stockOuts/create");
@@ -85,7 +98,7 @@ const StockOutListPage = () => {
     <IonPage>
       <IonHeader>
         <IonToolbar>
-          <IonTitle>StockOut</IonTitle>
+          <IonTitle>Stock Out</IonTitle>
           <IonButton slot="end" onClick={handleCreate}>
             Create
           </IonButton>
@@ -94,23 +107,55 @@ const StockOutListPage = () => {
       <IonContent fullscreen>
         <IonCard>
           <IonCardHeader>
-            <IonCardTitle>Total Sold</IonCardTitle>
-            <IonCardSubtitle>
-              <IonItem color="light">
-                <IonLabel>
-                    {_.reduce(
-                      stockOuts,
-                      (state, stockOut) =>
-                        state + stockOut.quantity * stockOut.price,
-                      0
-                    )}
-                </IonLabel>
-              </IonItem>
-            </IonCardSubtitle>
+            <IonItem>
+              <IonLabel slot="start">Total Sold</IonLabel>
+              <IonLabel slot="end">Total Price</IonLabel>
+            </IonItem>
+            <IonItem>
+              <IonLabel slot="start">
+                {_.reduce(
+                  stockOuts,
+                  (state, stockOut) =>
+                    state + stockOut.quantity * stockOut.price,
+                  0
+                )}
+              </IonLabel>
+              <IonLabel slot="end">
+                {_.reduce(
+                  stockOuts,
+                  (state, stockOut) =>
+                    state + stockOut.quantity * stockOut.buyingPrice,
+                  0
+                )}
+              </IonLabel>
+            </IonItem>
           </IonCardHeader>
 
           <IonCardContent>
-           Date Filter
+            <IonItem>
+              <IonDatetimeButton slot="start" datetime="startDate" />
+              <IonDatetimeButton slot="end" datetime="endDate" />
+            </IonItem>
+            <IonModal keepContentsMounted={true}>
+              <IonDatetime
+                value={startDate.format("YYYY-MM-DDTHH:mm")}
+                onIonChange={(e) => {
+                  setStartDate(dayjs(new Date(e.target.value as string)));
+                }}
+                presentation="date"
+                id="startDate"
+              />
+            </IonModal>
+            <IonModal keepContentsMounted={true}>
+              <IonDatetime
+                value={endDate.format("YYYY-MM-DDTHH:mm")}
+                onIonChange={(e) => {
+                  setEndDate(dayjs(new Date(e.target.value as string)));
+                }}
+                presentation="date"
+                id="endDate"
+              />
+            </IonModal>
           </IonCardContent>
         </IonCard>
 

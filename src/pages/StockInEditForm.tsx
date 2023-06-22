@@ -16,18 +16,15 @@ import {
 
 import { useHistory, useLocation } from "react-router";
 import { useMyStore } from "../store/store";
-import { CurrentStock, Product, StockIn, Supplier } from "../schema";
+import { Product, StockIn, Supplier } from "../schema";
 import { useFormik } from "formik";
 import { Optional } from "utility-types";
 import { Timestamp, where } from "firebase/firestore";
 import {
-  createDoc,
   exeTransaction,
   generateRef,
-  getDocById,
   getDocsByQuery,
   getRef,
-  updateDoc,
 } from "../operations";
 import ModalSelect from "../components/ModalSelect";
 import _ from "lodash";
@@ -108,7 +105,7 @@ const StockInEditPage = () => {
           inventoryRef: inventoryRef,
           price: values.price,
           quantity: values.quantity,
-          currentStockRef: stockId
+          currentStockRef: stockId,
         };
 
         await exeTransaction(async (transaction) => {

@@ -11,19 +11,22 @@ import {
   IonAccordion,
   IonAccordionGroup,
   IonLabel,
+  IonCard,
+  IonCardHeader,
+  IonCardTitle,
+  IonCardSubtitle,
+  IonCardContent,
 } from "@ionic/react";
 import { useHistory, useLocation } from "react-router-dom";
-import { Timestamp, deleteDoc, where } from "firebase/firestore";
+import { where } from "firebase/firestore";
 import {
   exeTransaction,
-  getDocById,
   getDocsByQuery,
-  getRef,
-  removeDoc,
+  getRef
 } from "../operations";
 import { CurrentStock } from "../schema";
 import { useMyStore } from "../store/store";
-import dayjs from "../util/dayjs";
+import _ from "lodash";
 
 const Dashboard = () => {
   const history = useHistory();
@@ -34,6 +37,7 @@ const Dashboard = () => {
   const [activeInventory] = useMyStore((s) => s.userStore.activeInventory);
 
   const fetchCurrentStocks = async () => {
+
     try {
       if (activeInventory) {
         const fetchedCurrentStocks = await getDocsByQuery<CurrentStock>(
@@ -98,6 +102,26 @@ const Dashboard = () => {
         </IonToolbar>
       </IonHeader>
       <IonContent fullscreen>
+      <IonCard>
+          <IonCardHeader>
+            <IonCardTitle>Total Stock Amount</IonCardTitle>
+            <IonCardSubtitle>
+              <IonItem color="light">
+                <IonLabel>
+                  {_.reduce(
+                    currentStocks,
+                    (state, stockOut) =>
+                      state + stockOut.quantity * stockOut.price,
+                    0
+                  )}
+                </IonLabel>
+              </IonItem>
+            </IonCardSubtitle>
+          </IonCardHeader>
+          <IonCardContent>
+            Whats app
+          </IonCardContent>
+        </IonCard>
         <IonAccordionGroup>
           {currentStocks.map((currentStock) => (
             <IonAccordion key={currentStock.id} value={currentStock.id}>
