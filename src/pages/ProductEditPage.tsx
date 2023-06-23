@@ -47,7 +47,7 @@ const ProductEditPage = () => {
     defaultBuyingPrice: 0,
     defaultSellingPrice: 0,
     categoryRef: "",
-    inventoryRef: activeInventory?.id,
+    inventoryRef: ''
   };
   const [product, setProduct] = useState<Optional<Product, "id">>(initProduct);
 
@@ -102,7 +102,9 @@ const ProductEditPage = () => {
       }
 
       console.log("Product saved successfully.");
+      formik.resetForm();
       history.push("/products");
+      setProduct(initProduct)
     } catch (error) {
       console.error("Error saving product:", error);
     }
@@ -120,9 +122,8 @@ const ProductEditPage = () => {
   useEffect(() => {
     if (productId) {
       fetchProduct();
-    } else {
-      setProduct(initProduct)
-    }
+    } 
+    setProduct(initProduct)
     fetchCategoryOptions();
   }, [productId, activeInventory, location]);
 

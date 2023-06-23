@@ -46,6 +46,7 @@ const CategoryEditPage = () => {
         }
       }
       console.log("Category saved successfully.");
+      formik.resetForm();
       history.goBack();
     } catch (error) {
       console.error("Error saving category:", error);

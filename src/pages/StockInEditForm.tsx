@@ -128,6 +128,7 @@ const StockInEditPage = () => {
         });
       }
       setStockIn(initStockIn);
+      formik.resetForm();
       history.push("/stockIns");
       console.log("StockIn saved successfully.");
       // history.goBack();

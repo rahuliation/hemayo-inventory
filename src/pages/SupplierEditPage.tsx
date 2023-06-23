@@ -54,6 +54,7 @@ const SupplierEditPage = () => {
         }
       }
       console.log("Supplier saved successfully.");
+      formik.resetForm();
       history.goBack();
     } catch (error) {
       console.error("Error saving supplier:", error);

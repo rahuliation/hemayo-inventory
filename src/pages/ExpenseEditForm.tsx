@@ -75,6 +75,7 @@ const ExpenseEditPage = () => {
       }
 
       console.log("Expense saved successfully.");
+      formik.resetForm();
       history.push("/expenses");
     } catch (error) {
       console.error("Error saving expense:", error);

@@ -116,6 +116,7 @@ const StockOutEditPage = () => {
       }
       console.log("StockOut saved successfully.");
       setStockOut(init);
+      formik.resetForm();
       history.push("/stockOuts");
     } catch (error) {
       console.error("Error saving StockOut:", error);
@@ -173,7 +174,7 @@ const StockOutEditPage = () => {
                 formik.setFieldValue(
                   "price",
                   stocked.product?.defaultSellingPrice
-                );
+                ); 
                 setMax(stocked.quantity);
                 formik.setFieldValue("productRef", stocked.productRef.id);
                 formik.setFieldValue("buyingPrice", stocked.price);

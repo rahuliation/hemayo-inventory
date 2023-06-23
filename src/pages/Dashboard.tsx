@@ -119,7 +119,6 @@ const Dashboard = () => {
             </IonCardSubtitle>
           </IonCardHeader>
           <IonCardContent>
-            Whats app
           </IonCardContent>
         </IonCard>
         <IonAccordionGroup>
