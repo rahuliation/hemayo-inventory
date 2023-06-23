@@ -44,8 +44,6 @@ import "@ionic/react/css/display.css";
 /* Theme variables */
 import "./theme/variables.css";
 import Dashboard from "./pages/Dashboard";
-import In from "./pages/StockIn";
-import Out from "./pages/Out";
 import Settings from "./pages/Settings";
 import Category from "./pages/Category";
 import Product from "./pages/Product";
