@@ -89,8 +89,7 @@ const ExpenseListPage = () => {
                 <IonLabel>
                   {_.reduce(
                     expenses,
-                    (state, stockOut) =>
-                      state + stockOut.amount,
+                    (state, stockOut) => state + stockOut.amount,
                     0
                   )}
                 </IonLabel>
@@ -99,6 +98,11 @@ const ExpenseListPage = () => {
           </IonCardHeader>
           <IonCardContent>Date Filter</IonCardContent>
         </IonCard>
+        <IonItem>
+          <IonLabel slot="end">
+            <p>Total {_.size(expenses)} entries</p>
+          </IonLabel>
+        </IonItem>
         <IonAccordionGroup>
           {expenses.map((expense) => (
             <IonAccordion key={expense.id} value={expense.id}>

@@ -158,7 +158,11 @@ const StockOutListPage = () => {
             </IonModal>
           </IonCardContent>
         </IonCard>
-
+        <IonItem>
+          <IonLabel slot="end">
+            <p>Total {_.size(stockOuts)} entries</p>
+          </IonLabel>
+        </IonItem>
         <IonAccordionGroup>
           {stockOuts.map((stockOut) => (
             <IonAccordion key={stockOut.id} value={stockOut.id}>

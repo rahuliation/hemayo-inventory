@@ -22,6 +22,7 @@ const CategoryListPage = () => {
   const history = useHistory();
   const [categories, setCategories] = useState<Category[]>([]);
   const [presentAlert] = useIonAlert();
+  
   let location = useLocation();
 
   const [activeInventory] = useMyStore((s) => s.userStore.activeInventory);

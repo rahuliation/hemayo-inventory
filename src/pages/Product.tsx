@@ -11,32 +11,48 @@ import {
   IonAccordionGroup,
   IonAccordion,
   useIonAlert,
+  IonSelect,
+  IonSelectOption,
 } from "@ionic/react";
 import { useHistory, useLocation } from "react-router-dom";
 import { getFirestore, collection, getDocs, where } from "firebase/firestore";
 import { getDocsByQuery, getRef, removeDoc } from "../operations";
-import { Product } from "../schema";
+import { Category, Product } from "../schema";
 import { useMyStore } from "../store/store";
+import _, { filter } from "lodash";
 
 const ProductListPage = () => {
   const history = useHistory();
   const [products, setProducts] = useState<Product[]>([]);
   const [presentAlert] = useIonAlert();
   const location = useLocation();
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [filterByCat, setFilterByCat] = useState<string | null>(null);
 
   const [activeInventory] = useMyStore((s) => s.userStore.activeInventory);
 
   const fetchProducts = async () => {
     try {
       if (activeInventory) {
-        const fetchProduct = await getDocsByQuery<Product>(
-          "products",
-          where(
-            "inventoryRef",
-            "==",
-            getRef("inventories", activeInventory?.id)
-          )
-        );
+        const qry = filterByCat
+          ? [
+              where(
+                "inventoryRef",
+                "==",
+                getRef("inventories", activeInventory?.id)
+              ),
+              where("categoryRef", "==", getRef("categories", filterByCat)),
+            ]
+          : [
+              where(
+                "inventoryRef",
+                "==",
+                getRef("inventories", activeInventory?.id)
+              ),
+            ];
+        console.log(qry);
+
+        const fetchProduct = await getDocsByQuery<Product>("products", ...qry);
         setProducts(fetchProduct);
       }
     } catch (error) {
@@ -44,12 +60,29 @@ const ProductListPage = () => {
     }
   };
 
-  useEffect(() => {
-    if (activeInventory?.id) {
-      fetchProducts();
+  const fetchCategories = async () => {
+    try {
+      if (activeInventory) {
+        const inventoryRef = getRef("inventories", activeInventory.id);
+        const fetchedCategories = await getDocsByQuery<Category>(
+          "categories",
+          where("inventoryRef", "==", inventoryRef)
+        );
+        setCategories(fetchedCategories);
+      }
+    } catch (error) {
+      console.error("Error fetching categories:", error);
     }
+  };
+
+  useEffect(() => {
     fetchProducts();
+    fetchCategories();
   }, [activeInventory, location]);
+
+  useEffect(() => {
+    fetchProducts();
+  }, [filterByCat]);
 
   const handleCreate = () => {
     history.push("/products/create");
@@ -75,6 +108,28 @@ const ProductListPage = () => {
         </IonToolbar>
       </IonHeader>
       <IonContent fullscreen>
+        <IonItem>
+          <IonSelect
+            slot="start"
+            interface="action-sheet"
+            placeholder="Category"
+            value={filterByCat}
+            cancelText="Clear"
+            onIonCancel={() => setFilterByCat(null)}
+            onIonChange={(e) => {
+              setFilterByCat(e.target.value as string);
+            }}
+          >
+            {_.map(categories, (category) => (
+              <IonSelectOption key={category.id} value={category.id}>
+                {category.name}
+              </IonSelectOption>
+            ))}
+          </IonSelect>
+          <IonLabel slot="end">
+            <p>Total {_.size(products)} items</p>
+          </IonLabel>
+        </IonItem>
         <IonAccordionGroup>
           {products.map((product) => (
             <IonAccordion key={product.id} value={product.id}>

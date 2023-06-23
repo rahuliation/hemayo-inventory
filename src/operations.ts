@@ -144,7 +144,7 @@ const processData = async (doc: DocumentData) => {
 
 export const getDocsByQuery = async <T>(
   collectionName: CollectionName,
-  ...queryConstraints: QueryConstraint[]
+  ...queryConstraints: (QueryConstraint)[]
 ): Promise<T[]> => {
   try {
     const colRef = collection(db, collectionName);

@@ -121,6 +121,11 @@ const Dashboard = () => {
           <IonCardContent>
           </IonCardContent>
         </IonCard>
+        <IonItem>
+          <IonLabel slot="end">
+            <p>Total {_.size(currentStocks)} entries</p>
+          </IonLabel>
+        </IonItem>
         <IonAccordionGroup>
           {currentStocks.map((currentStock) => (
             <IonAccordion key={currentStock.id} value={currentStock.id}>

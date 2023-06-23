@@ -19,6 +19,7 @@ import { deleteDoc, where } from "firebase/firestore";
 import { getDocsByQuery, getRef, removeDoc } from "../operations";
 import { Supplier } from "../schema";
 import { useMyStore } from "../store/store";
+import _ from "lodash";
 
 const SupplierListPage = () => {
   const history = useHistory();
@@ -74,6 +75,11 @@ const SupplierListPage = () => {
         </IonToolbar>
       </IonHeader>
       <IonContent fullscreen>
+        <IonItem>
+          <IonLabel slot="end">
+            <p>Total {_.size(suppliers)} entries</p>
+          </IonLabel>
+        </IonItem>
         <IonAccordionGroup>
           {suppliers.map((supplier) => (
             <IonAccordion value={supplier.id}>
